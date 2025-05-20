@@ -20,7 +20,7 @@ int zero_sent = 0;
 
 int sleepy_wait_continue = 1;
 
-char *command_post = "curl https://${KUBERNETES_SERVICE_HOST}:${KUBERNETES_SERVICE_PORT}/apis/rt.francescol96.univr/v1alpha1/namespaces/default/monitorings/${HOSTNAME}.${NODENAME}.rtmonitorobj --cacert /var/run/secrets/kubernetes.io/serviceaccount/ca.crt --header \"Authorization: Bearer $(cat /var/run/secrets/kubernetes.io/serviceaccount/token)\" -X POST -H 'Content-Type: application/yaml' -d \"---\n"
+char *command_post = "curl https://${KUBERNETES_SERVICE_HOST}:${KUBERNETES_SERVICE_PORT}/apis/rt.francescol96.univr/v1/namespaces/default/monitorings/${HOSTNAME}.${NODENAME}.rtmonitorobj --cacert /var/run/secrets/kubernetes.io/serviceaccount/ca.crt --header \"Authorization: Bearer $(cat /var/run/secrets/kubernetes.io/serviceaccount/token)\" -X POST -H 'Content-Type: application/yaml' -d \"---\n"
 "apiVersion: rt.francescol96.univr/v1alpha1\n"
 "kind: Monitoring\n"
 "metadata:\n"
@@ -28,8 +28,23 @@ char *command_post = "curl https://${KUBERNETES_SERVICE_HOST}:${KUBERNETES_SERVI
 "spec:\n"
 "  node: ${NODENAME}\n"
 "  podname: ${HOSTNAME}\n"
-"  missedDeadlinesTotal: 0\n"
-"  missedDeadlinesPeriod: 0\" >>/dev/null 2>>/dev/null && exit";
+"  pressuredDeadlinesTotal: 0\n"
+"  presurredDeadlinesPeriod: 0\" >>/dev/null 2>>/dev/null && exit";
+
+char *command_post = "curl https://${KUBERNETES_SERVICE_HOST}:${KUBERNETES_SERVICE_PORT}/apis/mcoperator.sdv.com/v1/namespaces/default/mckubes/${HOSTNAME}.${NODENAME}.rtmonitorobj "
+"--cacert /var/run/secrets/kubernetes.io/serviceaccount/ca.crt "
+"--header \"Authorization: Bearer $(cat /var/run/secrets/kubernetes.io/serviceaccount/token)\" "
+"-X POST -H 'Content-Type: application/yaml' -d \"---\n"
+"apiVersion: mcoperator.sdv.com/v1\n"
+"kind: McKube\n"
+"metadata:\n"
+"  name: ${HOSTNAME}.${NODENAME}.rtmonitorobj\n"
+"spec:\n"
+"  node: ${NODENAME}\n"
+"  podname: ${HOSTNAME}\n"
+"  pressuredDeadlinesTotal: 0\n"
+"  pressuredDeadlinesPeriod: 0\" >>/dev/null 2>>/dev/null && exit";
+
 
 char *command_patch = "curl https://${KUBERNETES_SERVICE_HOST}:${KUBERNETES_SERVICE_PORT}/apis/rt.francescol96.univr/v1alpha1/namespaces/default/monitorings/${HOSTNAME}.${NODENAME}.rtmonitorobj --cacert /var/run/secrets/kubernetes.io/serviceaccount/ca.crt --header \"Authorization: Bearer $(cat /var/run/secrets/kubernetes.io/serviceaccount/token)\" -X PATCH -H 'Content-Type: application/merge-patch+json' -d \'{ \"spec\": { \"missedDeadlinesTotal\": %d, \"missedDeadlinesPeriod\": %d } }\' >>/dev/null 2>>/dev/null && exit";
  
