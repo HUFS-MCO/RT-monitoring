@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: monitoring-test
+  namespace: default
+spec:
+  hostPID: true
+  containers:
+  - name: monitoring
+    image: woya031/test:0.0.4
+    securityContext:
+      privileged: true
+      capabilities:
+        add:
+          - SYS_NICE
+          - SYS_RESOURCE
+    env:
+    - name: HOSTNAME
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.name
+    - name: NODENAME
+      value: mckube-b80gv-ad07b4e
+    volumeMounts:
+    - name: k8s-api
+      mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      readOnly: true
+  volumes:
+  - name: k8s-api
+    projected:
+      sources:
+      - serviceAccountToken:
+          path: token
+          expirationSeconds: 3600
+      - configMap:
+          name: kube-root-ca.crt
+

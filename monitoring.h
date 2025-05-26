@@ -25,7 +25,7 @@ int usr1_zero_sent = 0; // 추가
 
 int sleepy_wait_continue = 1;
 
-char *command_post = "curl [https://$](https://$/){KUBERNETES_SERVICE_HOST}:${KUBERNETES_SERVICE_PORT}/apis/mcoperator.sdv.com/v1/namespaces/default/mckubes/${HOSTNAME}.${NODENAME}.rtmonitorobj --cacert /var/run/secrets/kubernetes.io/serviceaccount/ca.crt --header \"Authorization: Bearer $(cat /var/run/secrets/kubernetes.io/serviceaccount/token)\" -X POST -H 'Content-Type: application/yaml' -d \"---\n"
+char *command_post = "curl https://${KUBERNETES_SERVICE_HOST}:${KUBERNETES_SERVICE_PORT}/apis/mcoperator.sdv.com/v1/namespaces/default/mckubes/${HOSTNAME}.${NODENAME}.rtmonitorobj --cacert /var/run/secrets/kubernetes.io/serviceaccount/ca.crt --header \"Authorization: Bearer $(cat /var/run/secrets/kubernetes.io/serviceaccount/token)\" -X POST -H 'Content-Type: application/yaml' -d \"---\n"
 "apiVersion: mcoperator.sdv.com/v1\n"
 "kind: McKube\n"
 "metadata:\n"
@@ -34,9 +34,9 @@ char *command_post = "curl [https://$](https://$/){KUBERNETES_SERVICE_HOST}:${KU
 "  node: ${NODENAME}\n"
 "  podname: ${HOSTNAME}\n"
 "  pressuredDeadlinesTotal: 0\n"
-"  pressuredDeadlinesPeriod: 0\" >>/dev/null 2>>/dev/null && exit";
+"  pressuredDeadlinesPeriod: 0\" && exit";
 
-char *command_patch = "curl [https://$](https://$/){KUBERNETES_SERVICE_HOST}:${KUBERNETES_SERVICE_PORT}/apis/mcoperator.sdv.com/v1/namespaces/default/mckubes/${HOSTNAME}.${NODENAME}.rtmonitorobj --cacert /var/run/secrets/kubernetes.io/serviceaccount/ca.crt --header \"Authorization: Bearer $(cat /var/run/secrets/kubernetes.io/serviceaccount/token)\" -X PATCH -H 'Content-Type: application/merge-patch+json' -d \'{ \"spec\": { \"pressuredDeadlinesTotal\": %d, \"pressuredDeadlinesPeriod\": %d } }\' >>/dev/null 2>>/dev/null && exit";
+char *command_patch = "curl https://${KUBERNETES_SERVICE_HOST}:${KUBERNETES_SERVICE_PORT}/apis/mcoperator.sdv.com/v1/namespaces/default/mckubes/${HOSTNAME}.${NODENAME}.rtmonitorobj --cacert /var/run/secrets/kubernetes.io/serviceaccount/ca.crt --header \"Authorization: Bearer $(cat /var/run/secrets/kubernetes.io/serviceaccount/token)\" -X PATCH -H 'Content-Type: application/merge-patch+json' -d \'{ \"spec\": { \"pressuredDeadlinesTotal\": %d, \"pressuredDeadlinesPeriod\": %d } }\' >>/dev/null 2>>/dev/null && exit";
 
 void monitor() {
 	signal(SIGXCPU, sig_thread);
@@ -68,7 +68,7 @@ static void * sleepy_wait(void * arg) {
 		sleep(PERIOD);
 	}
 }
-
+/*
 static void sigcal(){ // 추가
 	char command_insert_numbers[2048];
 	sigxcpu_counter_difference = sigxcpu_counter-sigxcpu_counter_last_sent;
@@ -97,7 +97,8 @@ static void sigcal(){ // 추가
 		}
 	}
 }
-/*
+*/
+
 static void sigusr1cal(){
 	char command_insert_numbers[2048];
 	sigusr1_counter_difference = sigusr1_counter-sigusr1_counter_last_sent;
@@ -113,14 +114,44 @@ static void sigusr1cal(){
 		}
 	}
 }
-*/
+
 static void * period_send(void * arg) {
 	setpriority(PRIO_PROCESS, 0, 19);
-	system(command_post);	
+	fprintf(stderr, "Post inital sig\n");
+	system(command_post);
+	
 	while(sleepy_wait_continue) {
-		sigcal();
-		//sigusr1cal();
-		printf("usr: %d, x: %d\n", sigusr1_counter, sigxcpu_counter);
+		//sigcal();
+/*
+		char command_insert_numbers[2048];
+        	sigxcpu_counter_difference = sigxcpu_counter-sigxcpu_counter_last_sent;
+        	sigusr1_counter_difference = sigusr1_counter-sigusr1_counter_last_sent;
+        	if (sigxcpu_counter_difference > 0) {
+        	        xcpu_zero_sent = 0;
+        	}
+        	if (sigusr1_counter_difference > 0) {
+        	        usr1_zero_sent = 0;
+        	}
+        	if(sigusr1_counter_difference >= 0 && !usr1_zero_sent){
+        	        if (sigxcpu_counter_difference >= 0 && !xcpu_zero_sent) {
+                	        sprintf(command_insert_numbers, command_patch, sigusr1_counter_difference, sigxcpu_counter_difference);
+                	}
+                	else{
+                	        sprintf(command_insert_numbers, command_patch, sigusr1_counter_difference, 0);
+                	}
+                	system(command_insert_numbers);
+                	sigxcpu_counter_last_sent = sigxcpu_counter;
+                	sigusr1_counter_last_sent = sigusr1_counter;
+                	if (sigxcpu_counter_difference == 0) {
+                	        xcpu_zero_sent = 1;
+                	}
+                	if (sigusr1_counter_difference == 0) {
+                	        usr1_zero_sent = 1;
+                	}
+        	}
+*/
+
+		sigusr1cal();
 		sleep(PERIOD);
 	}
 }

@@ -7,7 +7,7 @@
 #include <string.h>
 #include <time.h>
 #include <linux/types.h>
-#include "/usr/src/linux-headers-6.5.13-softwarn2/include/uapi/linux/sched.h"
+#include <linux/sched.h>
 #include "monitoring.h"
 // #include "/usr/src/linux-headers-6.5.13-rtwarn/include/linux/sched.h"
 
